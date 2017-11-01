@@ -11,15 +11,47 @@ import glob
 import os
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.decomposition import TruncatedSVD
+from sklearn.random_projection import SparseRandomProjection
 
 NUM_CATEGORIES = 27
+"""
+(96, 300)
+(96, 3)
+loss = 15.0341
+loss = 2.85778e-05
+loss = 1.16586e-05
+loss = 7.08497e-06
+loss = 4.91575e-06
+loss = 3.68604e-06
+loss = 2.83434e-06
+loss = 2.12536e-06
+loss = 1.705e-06
+loss = 1.41482e-06
+1.0
+0.8
+
+(861, 300)
+(861, 27)
+loss = 41.9578
+loss = 0.0466252
+loss = 0.00952245
+loss = 0.00452041
+loss = 0.00266922
+loss = 0.00179631
+loss = 0.00129072
+loss = 0.000976606
+loss = 0.000765749
+loss = 0.000617511
+1.0
+0.693642
+"""
 
 def load_input(path, key):
     X = []
     y = []
     filenames = glob.glob(os.path.join(path, '*.mat'))
-    for filename in filenames:
+    
+    for index, filename in enumerate(filenames):
         X.append(sio.loadmat(filename)[key])
         y.append(one_hot(int(filename.split('_')[0][len(path) + 2:])))
     return X, np.array(y)
@@ -30,11 +62,9 @@ def preprocess(X, y):
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaler = scaler.fit(X)
     X = scaler.transform(X)
-    svd = TruncatedSVD(300)
-    X_lsa = svd.fit_transform(X)
-    explained_variance = svd.explained_variance_ratio_.sum()
-    print("Explained variance of the SVD step: {}%".format(int(explained_variance * 100)))
-    return np.array(X_lsa), np.array(y)
+    #sp = SparseRandomProjection(n_components = 300)
+    #X_transform = sp.fit_transform(X)
+    return np.array(X), np.array(y)
 
 def one_hot(i):
     b = np.zeros(NUM_CATEGORIES)
@@ -43,4 +73,5 @@ def one_hot(i):
 
 if __name__ == "__main__":
     X, y = load_input('test', 'd_depth')
-    preprocess(X, y)
+    X, y = preprocess(X, y)
+    print(X.shape)
