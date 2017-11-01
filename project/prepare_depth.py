@@ -12,6 +12,7 @@ import os
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.random_projection import SparseRandomProjection
+from sklearn.random_projection import johnson_lindenstrauss_min_dim
 
 NUM_CATEGORIES = 27
 """
@@ -44,6 +45,40 @@ loss = 0.000765749
 loss = 0.000617511
 1.0
 0.693642
+
+(861, 1000)
+(861, 27)
+loss = 16.246
+loss = 0.0145152
+loss = 0.00424126
+loss = 0.00206465
+loss = 0.00117178
+loss = 0.000727882
+loss = 0.000501082
+loss = 0.000369592
+loss = 0.000282762
+loss = 0.000220575
+1.0
+0.82659
+
+(861, 5792)
+(861, 27)
+loss = 7.6444
+loss = 0.0484374
+loss = 0.0141503
+loss = 0.00717282
+loss = 0.00435913
+loss = 0.00289571
+loss = 0.00206019
+loss = 0.00152134
+loss = 0.00116923
+loss = 0.000930001
+1.0
+0.965318
+
+from sklearn.random_projection import johnson_lindenstrauss_min_dim
+johnson_lindenstrauss_min_dim(861,eps=0.1)
+Out[3]: 5792
 """
 
 def load_input(path, key):
@@ -59,11 +94,12 @@ def load_input(path, key):
 def preprocess(X, y):
     min_frame = min(X, key=lambda x: x.shape[2]).shape[2]
     X = np.array([x[:,:,:min_frame].flatten() for x in X])
-    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaler = MinMaxScaler(feature_range=(-1, 1))
     scaler = scaler.fit(X)
     X = scaler.transform(X)
-    #sp = SparseRandomProjection(n_components = 300)
-    #X_transform = sp.fit_transform(X)
+    min_pc = johnson_lindenstrauss_min_dim(861,eps=0.1)
+    sp = SparseRandomProjection(n_components = int(min_pc))
+    X = sp.fit_transform(X)
     return np.array(X), np.array(y)
 
 def one_hot(i):

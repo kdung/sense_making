@@ -38,7 +38,7 @@ def train_inertial():
 
 def train_skeleton():
     X, y = prepare_skeleton.load_input('Skeleton', 'd_skel')
-    X, y = prepare_depth.preprocess(X, y)
+    X, y = prepare_skeleton.preprocess(X, y)
     train(X, y)
     
 def train_depth():
@@ -48,8 +48,8 @@ def train_depth():
     
 if __name__ == "__main__":
     #train_inertial()
-    #train_skeleton()
-    train_depth()
+    train_skeleton()
+    #train_depth()
     
  
     
