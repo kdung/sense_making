@@ -10,6 +10,8 @@ import scipy.io as sio
 import glob
 import os
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.decomposition import TruncatedSVD
 
 NUM_CATEGORIES = 27
 
@@ -23,20 +25,16 @@ def load_input(path, key):
     return X, np.array(y)
 
 def preprocess(X, y):
-    min_frame = X[0].shape[0]
-    for  x in X:
-        if min_frame > x.shape[0]:
-            min_frame = x.shape[0]
-    print(min_frame)
+    min_frame = min(X, key=lambda x: x.shape[0]).shape[0]
     X = np.array([x[:min_frame,:].flatten() for x in X])
-    
-    n = X[0].shape[0]
-    m = len(X)
-    X = np.array([np.array(x.reshape(n)) for x in X])
-    X = np.array(X.reshape(m,n))
-    y = y.reshape(m, NUM_CATEGORIES)
-    
-    return np.array(X), y
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaler = scaler.fit(X)
+    X = scaler.transform(X)
+    svd = TruncatedSVD(300)
+    X_lsa = svd.fit_transform(X)
+    explained_variance = svd.explained_variance_ratio_.sum()
+    print("Explained variance of the SVD step: {}%".format(int(explained_variance * 100)))
+    return np.array(X_lsa), np.array(y)
 
 def one_hot(i):
     b = np.zeros(NUM_CATEGORIES)

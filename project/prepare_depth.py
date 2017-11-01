@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Oct 29 22:47:22 2017
+Created on Sun Oct 29 23:16:04 2017
 
 @author: sophie
 """
@@ -12,7 +12,6 @@ import os
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import TruncatedSVD
-
 
 NUM_CATEGORIES = 27
 
@@ -41,3 +40,7 @@ def one_hot(i):
     b = np.zeros(NUM_CATEGORIES)
     b[i-1] = 1
     return b
+
+if __name__ == "__main__":
+    X, y = load_input('test', 'd_depth')
+    preprocess(X, y)
