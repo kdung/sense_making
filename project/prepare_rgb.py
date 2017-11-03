@@ -17,8 +17,6 @@ from sklearn.random_projection import SparseRandomProjection
 from sklearn.random_projection import johnson_lindenstrauss_min_dim
 import pickle
 from generator import MiniBatchGenerator
-import models
-import tensorflow as tf
 from models import MLP
 
 
@@ -28,8 +26,8 @@ RESIZED_H = 200
 SKIP_NUMBER = 1
 file_dict = {}
 reduced_pc = 2000
-recommended_pc = johnson_lindenstrauss_min_dim(861,eps=0.1)
-min_pc = recommended_pc - reduced_pc
+recommended_pc = johnson_lindenstrauss_min_dim(861,eps=0.1) #5792
+min_pc = recommended_pc - reduced_pc #3792
 
 def get_no_frames(input_path, output):
     total_frames = []
@@ -200,7 +198,7 @@ def train():
     print(sess.run(accuracy, feed_dict={x_train: X_to_test, y_train: y_to_test}))
     """
     
-    model = MLP(NUM_CATEGORIES, reduced_pc, layers=(256, 256, 256), learning_rate=0.0005)
+    model = MLP(NUM_CATEGORIES, min_pc, layers=(256, 256, 256), learning_rate=0.0005)
     model.start_session()
     
     X_test, y_test = generator.load_next_test_batch(1000)
