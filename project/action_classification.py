@@ -11,7 +11,6 @@ from sklearn import model_selection as ms
 import prepare_inertial
 import prepare_skeleton
 import prepare_depth
-import prepare_rgb
 import models
 
 NUM_CATEGORIES = 27
@@ -31,9 +30,9 @@ def train(X, y, model_path):
 
     print(sess.run(accuracy, feed_dict={x_train: X_to_train, y_train: y_to_train}))
     print(sess.run(accuracy, feed_dict={x_train: X_to_test, y_train: y_to_test}))
-    saver = tf.train.Saver()
-    save_path = saver.save(sess, "/model/" + model_path)
-    print("Model saved in file: %s" % save_path)
+    #saver = tf.train.Saver()
+    #save_path = saver.save(sess, "/model/" + model_path)
+    #print("Model saved in file: %s" % save_path)
     
 def train_inertial():
     X, y = prepare_inertial.load_input('Inertial', 'd_iner')
