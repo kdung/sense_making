@@ -19,6 +19,7 @@ import pickle
 from generator import MiniBatchGenerator
 import models
 import tensorflow as tf
+from models import MLP
 
 
 NUM_CATEGORIES = 27
@@ -26,6 +27,9 @@ RESIZED_W = 200
 RESIZED_H = 200
 SKIP_NUMBER = 1
 file_dict = {}
+reduced_pc = 2000
+recommended_pc = johnson_lindenstrauss_min_dim(861,eps=0.1)
+min_pc = recommended_pc - reduced_pc
 
 def get_no_frames(input_path, output):
     total_frames = []
@@ -117,7 +121,7 @@ def x_mapper(item):
     return np.load(file_dict[item] + ".npy")
 
 def y_mapper(item):
-    return file_dict[item].split('_')[0]
+    return int(file_dict[item].split('/')[1].split('_')[0])
 
 def load_next_train_batch(batch_size):
     generator = MiniBatchGenerator(861, x_mapper, y_mapper)
@@ -146,10 +150,9 @@ def preprocess(X, y):
     scaler = MinMaxScaler(feature_range=(-1, 1))
     scaler = scaler.fit(X)
     X = scaler.transform(X)
+    print(X.shape)
     # reduce principle components to improve performance
-    reduced_pc = 2000
-    recommended_pc = johnson_lindenstrauss_min_dim(861,eps=0.1)
-    min_pc = recommended_pc - reduced_pc
+    
     sp = SparseRandomProjection(n_components = int(min_pc))
     X = sp.fit_transform(X)
     return np.array(X), y
@@ -162,13 +165,19 @@ def one_hot(i):
 def train():
     generator = MiniBatchGenerator(861, x_mapper, y_mapper)
     generator.split_train_test()
-
+    
+    """
     print('load train mini-batch')
     while True:
         X, y = generator.load_next_train_batch(10)
         if X is None:
             break
+        print(y)
         X_to_train, y_to_train = preprocess(X, y)
+        print(X_to_train.shape)
+        print(y_to_train.shape)
+        break
+        
         sess, y_predict, x_train, y_train = models.train_nn(NUM_CATEGORIES,
                                                         X_to_train, y_to_train,
                                                         layers=(256, 256),
@@ -179,14 +188,38 @@ def train():
         X, y = generator.load_next_test_batch(10)
         if X is None:
             break
-        print(X)
+        X_to_test, y_to_test = preprocess(X, y)
+        correct_prediction = tf.equal(tf.argmax(y_predict, 1), tf.argmax(y_train, 1))
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        print(sess.run(accuracy, feed_dict={x_train: X_to_test, y_train: y_to_test}))
         
     correct_prediction = tf.equal(tf.argmax(y_predict, 1), tf.argmax(y_train, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
     #print(sess.run(accuracy, feed_dict={x_train: X_to_train, y_train: y_to_train}))
     print(sess.run(accuracy, feed_dict={x_train: X_to_test, y_train: y_to_test}))
-        
+    """
+    
+    model = MLP(NUM_CATEGORIES, reduced_pc, layers=(256, 256, 256), learning_rate=0.0005)
+    model.start_session()
+    
+    X_test, y_test = generator.load_next_test_batch(1000)
+    X_test, y_test = preprocess(X_test, y_test)
+    for iteration in range(1000):
+        generator.reset()
+        while True:
+            X_train, y_train = generator.load_next_train_batch(5)
+            if X_train is None:
+                break
+            X_train, X_train = preprocess(X_train, y_train)
+            model.train(X_train, y_train)
+        if iteration % 100 == 0:
+            print('loss = ', model.calculate_loss())
+            # print('train acc = ', model.calculate_accuracy(X_train, y_train))
+            print('test acc = ', model.calculate_accuracy(X_test, y_test))
+            print("\n---\n")
+        print(model.calculate_accuracy(X_test, y_test))
+    
 if __name__ == "__main__":
     train()
     #clean_data('RGB', 'rgb_clean')
