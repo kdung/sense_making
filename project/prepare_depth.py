@@ -97,7 +97,11 @@ def preprocess(X, y):
     scaler = MinMaxScaler(feature_range=(-1, 1))
     scaler = scaler.fit(X)
     X = scaler.transform(X)
-    min_pc = johnson_lindenstrauss_min_dim(861,eps=0.1)
+    
+    # reduce principle components to improve performance
+    reduced_pc = 2000
+    recommended_pc = johnson_lindenstrauss_min_dim(861,eps=0.1)
+    min_pc = recommended_pc - reduced_pc
     sp = SparseRandomProjection(n_components = int(min_pc))
     X = sp.fit_transform(X)
     return np.array(X), np.array(y)
