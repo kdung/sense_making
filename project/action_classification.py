@@ -11,6 +11,7 @@ from sklearn import model_selection as ms
 import prepare_inertial
 import prepare_skeleton
 import prepare_depth
+import prepare_rgb
 import models
 
 NUM_CATEGORIES = 27
@@ -47,34 +48,11 @@ def train_depth():
     train(X, y)
     
 if __name__ == "__main__":
-    #train_inertial()
+    train_inertial()
     #train_skeleton()
     #train_depth()
-    import cv2
-
-    cap = cv2.VideoCapture('test/a1_s1_t1_color.avi')
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    print(width)
-    print(height)
-    count = 0
-    while(cap.isOpened()):
-        ret, frame = cap.read()
     
-        #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        print(frame)
-        #print(type(frame))
-        if count > 1:
-            break
-        
-        if frame is not None or count < 2:
-            
-            count += 1
-        else:
-            break
-    print(count)
-    cap.release()
-    cv2.destroyAllWindows()
+    
     
  
     
