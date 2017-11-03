@@ -150,7 +150,7 @@ def preprocess(X, y):
     scaler = MinMaxScaler(feature_range=(-1, 1))
     scaler = scaler.fit(X)
     X = scaler.transform(X)
-    print(X.shape)
+    print(X.shape)  #(173, 3840000)
     # reduce principle components to improve performance
     
     sp = SparseRandomProjection(n_components = int(min_pc))
@@ -211,7 +211,7 @@ def train():
             X_train, y_train = generator.load_next_train_batch(5)
             if X_train is None:
                 break
-            X_train, X_train = preprocess(X_train, y_train)
+            X_train, y_train = preprocess(X_train, y_train)
             model.train(X_train, y_train)
         if iteration % 100 == 0:
             print('loss = ', model.calculate_loss())
