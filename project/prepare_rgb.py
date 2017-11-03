@@ -18,6 +18,7 @@ from sklearn.random_projection import johnson_lindenstrauss_min_dim
 import pickle
 from generator import MiniBatchGenerator
 from models import MLP
+import tensorflow as tf
 
 
 NUM_CATEGORIES = 27
@@ -203,6 +204,7 @@ def train():
     
     X_test, y_test = generator.load_next_test_batch(1000)
     X_test, y_test = preprocess(X_test, y_test)
+    sess = None
     for iteration in range(1000):
         generator.reset()
         while True:
@@ -210,13 +212,16 @@ def train():
             if X_train is None:
                 break
             X_train, y_train = preprocess(X_train, y_train)
-            model.train(X_train, y_train)
+            sess = model.train(X_train, y_train)
         if iteration % 100 == 0:
             print('loss = ', model.calculate_loss())
             # print('train acc = ', model.calculate_accuracy(X_train, y_train))
             print('test acc = ', model.calculate_accuracy(X_test, y_test))
             print("\n---\n")
-        print(model.calculate_accuracy(X_test, y_test))
+    saver = tf.train.Saver()
+    save_path = saver.save(sess, "/model/rgb.ckpt")
+    print("Model saved in file: %s" % save_path)
+    print(model.calculate_accuracy(X_test, y_test))
     
 if __name__ == "__main__":
     train()

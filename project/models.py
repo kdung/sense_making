@@ -84,6 +84,7 @@ class MLP(object):
 
     def train(self, X, y):
         _, self.loss_val = self.sess.run([self.train_step, self.cross_entropy], feed_dict={self.x_train: X, self.y_train: y})
+        return self.sess
 
     def calculate_loss(self):
         return self.loss_val

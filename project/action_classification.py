@@ -16,7 +16,7 @@ import models
 
 NUM_CATEGORIES = 27
 
-def train(X, y):
+def train(X, y, model_path):
     print(X.shape)
     print(y.shape)
     X_to_train, X_to_test, y_to_train, y_to_test = ms.train_test_split(X, y, test_size=0.2, random_state=1)
@@ -31,21 +31,24 @@ def train(X, y):
 
     print(sess.run(accuracy, feed_dict={x_train: X_to_train, y_train: y_to_train}))
     print(sess.run(accuracy, feed_dict={x_train: X_to_test, y_train: y_to_test}))
+    saver = tf.train.Saver()
+    save_path = saver.save(sess, "/model/" + model_path)
+    print("Model saved in file: %s" % save_path)
     
 def train_inertial():
     X, y = prepare_inertial.load_input('Inertial', 'd_iner')
     X, y = prepare_inertial.preprocess(X, y)
-    train(X, y)
+    train(X, y, "inertial.ckpt")
 
 def train_skeleton():
     X, y = prepare_skeleton.load_input('Skeleton', 'd_skel')
     X, y = prepare_skeleton.preprocess(X, y)
-    train(X, y)
+    train(X, y, "skeleton.ckpt")
     
 def train_depth():
     X, y = prepare_depth.load_input('Depth', 'd_depth')
     X, y = prepare_depth.preprocess(X, y)
-    train(X, y)
+    train(X, y, "depth.ckpt")
     
 if __name__ == "__main__":
     train_inertial()
