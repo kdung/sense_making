@@ -17,6 +17,8 @@ from sklearn.random_projection import SparseRandomProjection
 from sklearn.random_projection import johnson_lindenstrauss_min_dim
 import pickle
 from generator import MiniBatchGenerator
+import models
+import tensorflow as tf
 
 
 NUM_CATEGORIES = 27
@@ -139,7 +141,8 @@ def load_next_test_batch(batch_size):
         print(X)
         
 def preprocess(X, y):
-    
+    X = np.array([x.flatten() for x in X])
+    y = np.array([one_hot(y_item) for y_item in y])
     scaler = MinMaxScaler(feature_range=(-1, 1))
     scaler = scaler.fit(X)
     X = scaler.transform(X)
@@ -149,7 +152,7 @@ def preprocess(X, y):
     min_pc = recommended_pc - reduced_pc
     sp = SparseRandomProjection(n_components = int(min_pc))
     X = sp.fit_transform(X)
-    return np.array(X), np.array(y)
+    return np.array(X), y
 
 def one_hot(i):
     b = np.zeros(NUM_CATEGORIES)
@@ -165,8 +168,11 @@ def train():
         X, y = generator.load_next_train_batch(10)
         if X is None:
             break
-        print(X)
-        print(y)
+        X_to_train, y_to_train = preprocess(X, y)
+        sess, y_predict, x_train, y_train = models.train_nn(NUM_CATEGORIES,
+                                                        X_to_train, y_to_train,
+                                                        layers=(256, 256),
+                                                        iterations=1000)
 
     print('load test mini-batch')
     while True:
@@ -174,6 +180,12 @@ def train():
         if X is None:
             break
         print(X)
+        
+    correct_prediction = tf.equal(tf.argmax(y_predict, 1), tf.argmax(y_train, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+    #print(sess.run(accuracy, feed_dict={x_train: X_to_train, y_train: y_to_train}))
+    print(sess.run(accuracy, feed_dict={x_train: X_to_test, y_train: y_to_test}))
         
 if __name__ == "__main__":
     train()
