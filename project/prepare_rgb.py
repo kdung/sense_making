@@ -170,7 +170,7 @@ def preprocess_batch():
         pickle.dump(y_test, handle, protocol=pickle.HIGHEST_PROTOCOL)
         
 def train_minibatch():
-    
+
     generator = MiniBatchGenerator(861, x_mapper, y_mapper)
     generator.split_train_test()
     
@@ -248,7 +248,7 @@ def train():
 
     sess, y_predict, x_train, y_train = models.train_nn(NUM_CATEGORIES,
                                                         X_to_train, y_to_train,
-                                                        layers=(256, 256, 256),
+                                                        layers=(256, 256),
                                                         iterations=1000)
 
     correct_prediction = tf.equal(tf.argmax(y_predict, 1), tf.argmax(y_train, 1))
@@ -262,6 +262,6 @@ if __name__ == "__main__":
     #clean_data('RGB', 'rgb_clean')
     #total_frames = get_no_frames('RGB', 'rgb_npy')
     #fr_dict = get_no_frames_dict('RGB', 'rgb_fr_dict')
-    preprocess_batch()
-    #train()
+    #preprocess_batch()
+    train()
     
